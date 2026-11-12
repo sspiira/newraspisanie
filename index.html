@@ -11,7 +11,9 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Unbounded:wght@500;600&display=swap"
     />
+
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
     <style>
       /* Mini App: week tabs and day pills on top, selected day as a list of lessons, colours follow the Telegram theme. */
       :root {
@@ -588,633 +590,652 @@
         </footer>
       </div>
     </div>
-    <script>
-      var PAIRS = {
-        1: ["8:15", "9:45"],
-        2: ["9:55", "11:25"],
-        3: ["12:05", "13:35"],
-        4: ["13:45", "15:15"],
-        5: ["15:25", "16:55"],
-        6: ["17:05", "18:35"],
-      };
-      var S = {
-        oht: {
-          n: "Охрана труда и бережливое производство",
-          t: "Плюснина О.М.",
-          h: 48,
-        },
-        pdis: {
-          n: "Проектирование и дизайн информационных систем",
-          t: "Сафонова Т.В.",
-          h: 285,
-        },
-        chm: { n: "Численные методы", t: "Клеймёнов В.Ф.", h: 200 },
-        rkis: {
-          n: "Разработка кода информационных систем",
-          t: "Сафонова Т.В.",
-          h: 150,
-        },
-        web: {
-          n: "Проектирование и разработка веб-приложений",
-          t: "Сенотрусова Т.А.",
-          h: 18,
-        },
-        hist: { n: "История", t: "Михалёва Г.С.", h: 28 },
-        razg: {
-          n: "Внеурочное мероприятие «Разговоры о важном»",
-          t: "Сенотрусова Т.А.",
-          h: 335,
-        },
-        ya: {
-          n: "Иностранный язык в профессиональной деятельности",
-          t: "",
-          h: 100,
-        },
-        arh: { n: "Архитектура аппаратных средств", t: "Моисеева А.Д.", h: 8 },
-        ks: { n: "Компьютерные сети", t: "Шкилёва В.Е.", h: 235 },
-        fiz: { n: "Физическая культура", t: "", h: 170 },
-      };
-      var ROD = { sg: 1, t: "Родионова И.П.", r: "21-35" },
-        BUH = { sg: 2, t: "Бухарова Н.А.", r: "21-17" };
-      /* w: u = верхняя, l = нижняя, b = каждую неделю */
-      var DAYS = [
-        {
-          d: "Понедельник",
-          s: "Пн",
-          L: [
-            { p: 1, w: "l", s: "oht", r: "21-36" },
-            { p: 2, w: "l", s: "pdis", r: "21-39" },
-            { p: 3, w: "l", s: "chm", r: "21-31" },
-            { p: 4, w: "l", s: "rkis", r: "22-213" },
-          ],
-        },
-        {
-          d: "Вторник",
-          s: "Вт",
-          L: [
-            { p: 1, w: "l", s: "ya", g: [BUH] },
-            { p: 2, w: "b", s: "web", r: "21-33" },
-            { p: 3, w: "u", s: "pdis", r: "21-33" },
-            { p: 3, w: "l", s: "hist", r: "21-41" },
-            { p: 4, w: "u", s: "razg", r: "21-33" },
-          ],
-        },
-        {
-          d: "Среда",
-          s: "Ср",
-          L: [
-            { p: 3, w: "l", s: "chm", r: "21-34" },
-            { p: 4, w: "l", s: "rkis", r: "22-214" },
-            { p: 5, w: "u", s: "pdis", r: "22-214" },
-            { p: 5, w: "l", s: "arh", r: "21-39" },
-            { p: 6, w: "u", s: "arh", r: "21-39" },
-            { p: 6, w: "l", s: "pdis", r: "21-39" },
-          ],
-        },
-        {
-          d: "Четверг",
-          s: "Чт",
-          L: [
-            { p: 1, w: "u", s: "rkis", r: "21-39" },
-            { p: 2, w: "u", s: "rkis", r: "21-39" },
-            { p: 3, w: "u", s: "web", r: "21-33" },
-            { p: 4, w: "b", s: "ks", r: "21-33" },
-            { p: 5, w: "l", s: "web", r: "21-33" },
-          ],
-        },
-        {
-          d: "Пятница",
-          s: "Пт",
-          L: [
-            { p: 2, w: "u", s: "hist", r: "21-41" },
-            { p: 3, w: "u", s: "oht", r: "21-36" },
-            { p: 3, w: "l", s: "ya", g: [ROD, BUH] },
-            { p: 4, w: "u", s: "chm", r: "21-47" },
-            { p: 4, w: "l", s: "rkis", r: "21-39" },
-            { p: 5, w: "u", s: "arh", r: "21-39" },
-            { p: 5, w: "l", s: "fiz", r: "–" },
-          ],
-        },
-        {
-          d: "Суббота",
-          s: "Сб",
-          L: [
-            { p: 2, w: "l", s: "ya", g: [ROD] },
-            { p: 3, w: "l", s: "ks", r: "21-46" },
-            { p: 4, w: "l", s: "web", r: "21-33" },
-            { p: 5, w: "l", s: "fiz", r: "–" },
-          ],
-        },
-      ];
 
-      /* ===== Время и недели ===== */
-      var TZ_OFFSET_MIN = 8 * 60; /* Иркутск, UTC+8 */
-      function irkutskNow() {
-        var n = new Date();
-        return new Date(
-          n.getTime() + (n.getTimezoneOffset() + TZ_OFFSET_MIN) * 60000,
-        );
-      }
-      function mondayOf(d) {
-        var x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-        x.setDate(x.getDate() - ((x.getDay() + 6) % 7));
-        return x;
-      }
-      var ANCHOR = new Date(
-        2026,
-        10,
-        9,
-      ); /* понедельник верхней недели: 09.11.2026 */
-      var swapped = false;
-      function weekOf(d) {
-        var n = Math.round((mondayOf(d) - ANCHOR) / (7 * 86400000));
-        var up = ((n % 2) + 2) % 2 === 0;
-        if (swapped) up = !up;
-        return up ? "u" : "l";
-      }
-      function pad(n) {
-        return ("0" + n).slice(-2);
-      }
-      function iso(d) {
-        return (
-          d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate())
-        );
-      }
-      function ddmm(d) {
-        return pad(d.getDate()) + "." + pad(d.getMonth() + 1);
-      }
-      function addDays(d, n) {
-        var x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-        x.setDate(x.getDate() + n);
-        return x;
-      }
+      <script>
+        window.onerror = function(message, source, line, column) {
+          document.body.innerHTML =
+            '<div style="padding:20px;color:red;font-size:16px;word-break:break-word">' +
+            '<b>Ошибка JavaScript:</b><br>' +
+            message + '<br>Строка: ' + line +
+            '</div>';
+        };
 
-      var now = irkutskNow();
-      var dow = (now.getDay() + 6) % 7; /* 0 = Пн */
-      var week,
-        day,
-        curWeek,
-        sub = 0;
-      try {
-        swapped = localStorage.getItem("isp242swap") === "1";
-        sub = Number(localStorage.getItem("isp242sub")) || 0;
-      } catch (e) {}
-      curWeek = weekOf(now);
-      if (dow === 6) {
-        week = weekOf(addDays(now, 1));
-        day = 0;
-      } else {
-        week = curWeek;
-        day = dow;
-      }
+        window.onunhandledrejection = function(event) {
+          document.body.innerHTML =
+            '<div style="padding:20px;color:red;font-size:16px;word-break:break-word">' +
+            '<b>Ошибка загрузки:</b><br>' +
+            event.reason +
+            '</div>';
+        };
 
-      /* Понедельник отображаемой недели */
-      function mondayFor(w) {
-        var m0 = mondayOf(irkutskNow());
-        return w === curWeek ? m0 : addDays(m0, 7);
-      }
+        var PAIRS = {
 
-      /* ===== Утилиты ===== */
-      function esc(s) {
-        return String(s).replace(/[&<>"]/g, function (c) {
-          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
-        });
-      }
-      function plural(n) {
-        var m = n % 10,
-          c = n % 100;
-        return m === 1 && c !== 11
-          ? "пара"
-          : m >= 2 && m <= 4 && (c < 12 || c > 14)
-            ? "пары"
-            : "пар";
-      }
-      function $(id) {
-        return document.getElementById(id);
-      }
-      function visible(x, w) {
-        if (x.w !== "b" && x.w !== w) return false;
-        if (
-          sub &&
-          x.g &&
-          !x.g.some(function (g) {
-            return g.sg === sub;
-          })
-        )
-          return false;
-        return true;
-      }
-      function lessonsOf(i, w) {
-        return DAYS[i].L.filter(function (x) {
-          return visible(x, w);
-        }).sort(function (a, b) {
-          return a.p - b.p;
-        });
-      }
-      function duck(h) {
-        return (
-          '<div class="duck" style="--h:' +
-          h +
-          '"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#duck"/></svg></div>'
-        );
-      }
-      function toMin(s) {
-        var a = s.split(":");
-        return Number(a[0]) * 60 + Number(a[1]);
-      }
 
-      /* ===== Замены (данные) ===== */
-      var REPL_URL =
-        "/api/replacements"; /* если Mini App лежит на другом домене, укажите полный https-адрес бота */
-      var RDAYS = [
-        "Воскресенье",
-        "Понедельник",
-        "Вторник",
-        "Среда",
-        "Четверг",
-        "Пятница",
-        "Суббота",
-      ];
-      var replDays = {};
-      function hasRepl(isoDate) {
-        var e = replDays[isoDate];
-        return !!(e && e.rows && e.rows.length);
-      }
+          1: ["8:15", "9:45"],
+          2: ["9:55", "11:25"],
+          3: ["12:05", "13:35"],
+          4: ["13:45", "15:15"],
+          5: ["15:25", "16:55"],
+          6: ["17:05", "18:35"],
+        };
+        var S = {
+          oht: {
+            n: "Охрана труда и бережливое производство",
+            t: "Плюснина О.М.",
+            h: 48,
+          },
+          pdis: {
+            n: "Проектирование и дизайн информационных систем",
+            t: "Сафонова Т.В.",
+            h: 285,
+          },
+          chm: { n: "Численные методы", t: "Клеймёнов В.Ф.", h: 200 },
+          rkis: {
+            n: "Разработка кода информационных систем",
+            t: "Сафонова Т.В.",
+            h: 150,
+          },
+          web: {
+            n: "Проектирование и разработка веб-приложений",
+            t: "Сенотрусова Т.А.",
+            h: 18,
+          },
+          hist: { n: "История", t: "Михалёва Г.С.", h: 28 },
+          razg: {
+            n: "Внеурочное мероприятие «Разговоры о важном»",
+            t: "Сенотрусова Т.А.",
+            h: 335,
+          },
+          ya: {
+            n: "Иностранный язык в профессиональной деятельности",
+            t: "",
+            h: 100,
+          },
+          arh: { n: "Архитектура аппаратных средств", t: "Моисеева А.Д.", h: 8 },
+          ks: { n: "Компьютерные сети", t: "Шкилёва В.Е.", h: 235 },
+          fiz: { n: "Физическая культура", t: "", h: 170 },
+        };
+        var ROD = { sg: 1, t: "Родионова И.П.", r: "21-35" },
+          BUH = { sg: 2, t: "Бухарова Н.А.", r: "21-17" };
+        /* w: u = верхняя, l = нижняя, b = каждую неделю */
+        var DAYS = [
+          {
+            d: "Понедельник",
+            s: "Пн",
+            L: [
+              { p: 1, w: "l", s: "oht", r: "21-36" },
+              { p: 2, w: "l", s: "pdis", r: "21-39" },
+              { p: 3, w: "l", s: "chm", r: "21-31" },
+              { p: 4, w: "l", s: "rkis", r: "22-213" },
+            ],
+          },
+          {
+            d: "Вторник",
+            s: "Вт",
+            L: [
+              { p: 1, w: "l", s: "ya", g: [BUH] },
+              { p: 2, w: "b", s: "web", r: "21-33" },
+              { p: 3, w: "u", s: "pdis", r: "21-33" },
+              { p: 3, w: "l", s: "hist", r: "21-41" },
+              { p: 4, w: "u", s: "razg", r: "21-33" },
+            ],
+          },
+          {
+            d: "Среда",
+            s: "Ср",
+            L: [
+              { p: 3, w: "l", s: "chm", r: "21-34" },
+              { p: 4, w: "l", s: "rkis", r: "22-214" },
+              { p: 5, w: "u", s: "pdis", r: "22-214" },
+              { p: 5, w: "l", s: "arh", r: "21-39" },
+              { p: 6, w: "u", s: "arh", r: "21-39" },
+              { p: 6, w: "l", s: "pdis", r: "21-39" },
+            ],
+          },
+          {
+            d: "Четверг",
+            s: "Чт",
+            L: [
+              { p: 1, w: "u", s: "rkis", r: "21-39" },
+              { p: 2, w: "u", s: "rkis", r: "21-39" },
+              { p: 3, w: "u", s: "web", r: "21-33" },
+              { p: 4, w: "b", s: "ks", r: "21-33" },
+              { p: 5, w: "l", s: "web", r: "21-33" },
+            ],
+          },
+          {
+            d: "Пятница",
+            s: "Пт",
+            L: [
+              { p: 2, w: "u", s: "hist", r: "21-41" },
+              { p: 3, w: "u", s: "oht", r: "21-36" },
+              { p: 3, w: "l", s: "ya", g: [ROD, BUH] },
+              { p: 4, w: "u", s: "chm", r: "21-47" },
+              { p: 4, w: "l", s: "rkis", r: "21-39" },
+              { p: 5, w: "u", s: "arh", r: "21-39" },
+              { p: 5, w: "l", s: "fiz", r: "–" },
+            ],
+          },
+          {
+            d: "Суббота",
+            s: "Сб",
+            L: [
+              { p: 2, w: "l", s: "ya", g: [ROD] },
+              { p: 3, w: "l", s: "ks", r: "21-46" },
+              { p: 4, w: "l", s: "web", r: "21-33" },
+              { p: 5, w: "l", s: "fiz", r: "–" },
+            ],
+          },
+        ];
 
-      /* ===== Расписание ===== */
-      function lessonHtml(x) {
-        var s = S[x.s],
-          tm = PAIRS[x.p],
-          meta;
-        if (x.g) {
-          meta = x.g
-            .filter(function (g) {
-              return !sub || g.sg === sub;
-            })
-            .map(function (g) {
-              return (
-                '<div class="m row"><span class="tag" style="--h:' +
-                s.h +
-                '">подгруппа ' +
-                g.sg +
-                "</span><span>" +
-                esc(g.t) +
-                "</span><span>ауд. " +
-                g.r +
-                "</span></div>"
-              );
-            })
-            .join("");
-          if (x.g.length === 1 && !sub)
-            meta +=
-              '<div class="m row">Подгруппа ' +
-              (x.g[0].sg === 1 ? 2 : 1) +
-              " в это время свободна</div>";
-        } else {
-          var where = x.r === "–" ? "вне аудитории" : "ауд. " + x.r;
-          meta =
-            '<div class="m row">' +
-            (s.t ? "<span>" + esc(s.t) + "</span>" : "") +
-            "<span>" +
-            where +
-            "</span>" +
-            (x.w === "b" ? '<span class="tag both">каждую неделю</span>' : "") +
-            "</div>";
+        /* ===== Время и недели ===== */
+        var TZ_OFFSET_MIN = 8 * 60; /* Иркутск, UTC+8 */
+        function irkutskNow() {
+          var n = new Date();
+          return new Date(
+            n.getTime() + (n.getTimezoneOffset() + TZ_OFFSET_MIN) * 60000,
+          );
         }
-        return (
-          '<li class="lesson"><div class="time"><b>' +
-          x.p +
-          "</b>" +
-          tm[0] +
-          "<br>" +
-          tm[1] +
-          "</div>" +
-          '<div class="card">' +
-          duck(s.h) +
-          '<div style="min-width:0"><div class="t">' +
-          esc(s.n) +
-          "</div>" +
-          meta +
-          "</div></div></li>"
-        );
-      }
+        function mondayOf(d) {
+          var x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+          x.setDate(x.getDate() - ((x.getDay() + 6) % 7));
+          return x;
+        }
+        var ANCHOR = new Date(
+          2026,
+          10,
+          9,
+        ); /* понедельник верхней недели: 09.11.2026 */
+        var swapped = false;
+        function weekOf(d) {
+          var n = Math.round((mondayOf(d) - ANCHOR) / (7 * 86400000));
+          var up = ((n % 2) + 2) % 2 === 0;
+          if (swapped) up = !up;
+          return up ? "u" : "l";
+        }
+        function pad(n) {
+          return ("0" + n).slice(-2);
+        }
+        function iso(d) {
+          return (
+            d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate())
+          );
+        }
+        function ddmm(d) {
+          return pad(d.getDate()) + "." + pad(d.getMonth() + 1);
+        }
+        function addDays(d, n) {
+          var x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+          x.setDate(x.getDate() + n);
+          return x;
+        }
 
-      function renderWeekline() {
-        var m = mondayFor(curWeek);
-        $("weekline").innerHTML =
-          '<svg viewBox="0 0 48 48" aria-hidden="true"><use href="#duck"/></svg>' +
-          "Сейчас " +
-          (curWeek === "u" ? "верхняя" : "нижняя") +
-          " неделя" +
-          "<small>" +
-          ddmm(m) +
-          " – " +
-          ddmm(addDays(m, 5)) +
-          "</small>";
-      }
+        var now = irkutskNow();
+        var dow = (now.getDay() + 6) % 7; /* 0 = Пн */
+        var week,
+          day,
+          curWeek,
+          sub = 0;
+        try {
+          swapped = localStorage.getItem("isp242swap") === "1";
+          sub = Number(localStorage.getItem("isp242sub")) || 0;
+        } catch (e) {}
+        curWeek = weekOf(now);
+        if (dow === 6) {
+          week = weekOf(addDays(now, 1));
+          day = 0;
+        } else {
+          week = curWeek;
+          day = dow;
+        }
 
-      function renderTabs() {
-        ["u", "l"].forEach(function (w) {
-          var b = $("tab-" + w),
-            m = mondayFor(w);
-          b.innerHTML =
-            (w === "u" ? "Верхняя" : "Нижняя") +
+        /* Понедельник отображаемой недели */
+        function mondayFor(w) {
+          var m0 = mondayOf(irkutskNow());
+          return w === curWeek ? m0 : addDays(m0, 7);
+        }
+
+        /* ===== Утилиты ===== */
+        function esc(s) {
+          return String(s).replace(/[&<>"]/g, function (c) {
+            return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+          });
+        }
+        function plural(n) {
+          var m = n % 10,
+            c = n % 100;
+          return m === 1 && c !== 11
+            ? "пара"
+            : m >= 2 && m <= 4 && (c < 12 || c > 14)
+              ? "пары"
+              : "пар";
+        }
+        function $(id) {
+          return document.getElementById(id);
+        }
+        function visible(x, w) {
+          if (x.w !== "b" && x.w !== w) return false;
+          if (
+            sub &&
+            x.g &&
+            !x.g.some(function (g) {
+              return g.sg === sub;
+            })
+          )
+            return false;
+          return true;
+        }
+        function lessonsOf(i, w) {
+          return DAYS[i].L.filter(function (x) {
+            return visible(x, w);
+          }).sort(function (a, b) {
+            return a.p - b.p;
+          });
+        }
+        function duck(h) {
+          return (
+            '<div class="duck" style="--h:' +
+            h +
+            '"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#duck"/></svg></div>'
+          );
+        }
+        function toMin(s) {
+          var a = s.split(":");
+          return Number(a[0]) * 60 + Number(a[1]);
+        }
+
+        /* ===== Замены (данные) ===== */
+        var REPL_URL =
+          "/api/replacements"; /* если Mini App лежит на другом домене, укажите полный https-адрес бота */
+        var RDAYS = [
+          "Воскресенье",
+          "Понедельник",
+          "Вторник",
+          "Среда",
+          "Четверг",
+          "Пятница",
+          "Суббота",
+        ];
+        var replDays = {};
+        function hasRepl(isoDate) {
+          var e = replDays[isoDate];
+          return !!(e && e.rows && e.rows.length);
+        }
+
+        /* ===== Расписание ===== */
+        function lessonHtml(x) {
+          var s = S[x.s],
+            tm = PAIRS[x.p],
+            meta;
+          if (x.g) {
+            meta = x.g
+              .filter(function (g) {
+                return !sub || g.sg === sub;
+              })
+              .map(function (g) {
+                return (
+                  '<div class="m row"><span class="tag" style="--h:' +
+                  s.h +
+                  '">подгруппа ' +
+                  g.sg +
+                  "</span><span>" +
+                  esc(g.t) +
+                  "</span><span>ауд. " +
+                  g.r +
+                  "</span></div>"
+                );
+              })
+              .join("");
+            if (x.g.length === 1 && !sub)
+              meta +=
+                '<div class="m row">Подгруппа ' +
+                (x.g[0].sg === 1 ? 2 : 1) +
+                " в это время свободна</div>";
+          } else {
+            var where = x.r === "–" ? "вне аудитории" : "ауд. " + x.r;
+            meta =
+              '<div class="m row">' +
+              (s.t ? "<span>" + esc(s.t) + "</span>" : "") +
+              "<span>" +
+              where +
+              "</span>" +
+              (x.w === "b" ? '<span class="tag both">каждую неделю</span>' : "") +
+              "</div>";
+          }
+          return (
+            '<li class="lesson"><div class="time"><b>' +
+            x.p +
+            "</b>" +
+            tm[0] +
+            "<br>" +
+            tm[1] +
+            "</div>" +
+            '<div class="card">' +
+            duck(s.h) +
+            '<div style="min-width:0"><div class="t">' +
+            esc(s.n) +
+            "</div>" +
+            meta +
+            "</div></div></li>"
+          );
+        }
+
+        function renderWeekline() {
+          var m = mondayFor(curWeek);
+          $("weekline").innerHTML =
+            '<svg viewBox="0 0 48 48" aria-hidden="true"><use href="#duck"/></svg>' +
+            "Сейчас " +
+            (curWeek === "u" ? "верхняя" : "нижняя") +
+            " неделя" +
             "<small>" +
             ddmm(m) +
             " – " +
             ddmm(addDays(m, 5)) +
             "</small>";
-          b.setAttribute("aria-selected", week === w ? "true" : "false");
-        });
-      }
-
-      function renderDays() {
-        var m = mondayFor(week);
-        $("days").innerHTML = DAYS.map(function (D, i) {
-          var dt = addDays(m, i);
-          return (
-            '<button role="tab" data-d="' +
-            i +
-            '" aria-selected="' +
-            (day === i) +
-            '"' +
-            (hasRepl(iso(dt)) ? ' class="dot"' : "") +
-            ">" +
-            "<b>" +
-            D.s +
-            "</b><span>" +
-            ddmm(dt) +
-            "</span></button>"
-          );
-        }).join("");
-      }
-
-      function renderMain() {
-        var ls = lessonsOf(day, week),
-          m = addDays(mondayFor(week), day),
-          isoDate = iso(m),
-          html;
-        $("sg1").setAttribute("aria-pressed", sub === 1 ? "true" : "false");
-        $("sg2").setAttribute("aria-pressed", sub === 2 ? "true" : "false");
-        $("tot").textContent = ls.length
-          ? ls.length + " " + plural(ls.length)
-          : "";
-        html =
-          '<section class="day"><h2>' +
-          DAYS[day].d +
-          "<span>" +
-          ddmm(m) +
-          "</span></h2>";
-        if (!ls.length) {
-          html +=
-            '<div class="empty"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#duck"/></svg>Занятий нет, утка отдыхает.</div>';
-        } else {
-          html += '<ul class="list">' + ls.map(lessonHtml).join("") + "</ul>";
         }
-        html += "</section>";
-        if (hasRepl(isoDate))
-          html +=
-            '<button class="rlink" id="gorepl">⚠️ На этот день есть замены. Открыть</button>';
-        $("main").innerHTML = html;
-      }
 
-      function renderNow() {
-        var n = irkutskNow(),
-          d = (n.getDay() + 6) % 7,
-          cur = n.getHours() * 60 + n.getMinutes(),
-          el = $("now"),
-          html;
-        if (d === 6) {
-          el.innerHTML =
-            '<div class="lbl">Сегодня</div><div class="big">Воскресенье, выходной</div>';
-          return;
-        }
-        var ls = lessonsOf(d, curWeek);
-        if (!ls.length) {
-          el.innerHTML =
-            '<div class="lbl">Сегодня</div><div class="big">Занятий нет</div>';
-          return;
-        }
-        var live = null,
-          next = null,
-          i,
-          a,
-          b;
-        for (i = 0; i < ls.length; i++) {
-          a = toMin(PAIRS[ls[i].p][0]);
-          b = toMin(PAIRS[ls[i].p][1]);
-          if (cur >= a && cur < b) {
-            live = ls[i];
-            break;
-          }
-          if (cur < a && !next) next = ls[i];
-        }
-        if (live) {
-          a = toMin(PAIRS[live.p][0]);
-          b = toMin(PAIRS[live.p][1]);
-          html =
-            '<div class="lbl">Идёт сейчас<span class="live">' +
-            live.p +
-            " пара</span></div>" +
-            '<div class="big">' +
-            esc(S[live.s].n) +
-            "</div>" +
-            '<div class="sm">до ' +
-            PAIRS[live.p][1] +
-            " · осталось " +
-            (b - cur) +
-            " мин</div>" +
-            '<div class="bar"><i style="width:' +
-            Math.round(((cur - a) / (b - a)) * 100) +
-            '%"></i></div>';
-        } else if (next) {
-          a = toMin(PAIRS[next.p][0]);
-          html =
-            '<div class="lbl">Дальше</div><div class="big">' +
-            esc(S[next.s].n) +
-            "</div>" +
-            '<div class="sm">' +
-            next.p +
-            " пара · в " +
-            PAIRS[next.p][0] +
-            " · через " +
-            (a - cur) +
-            " мин</div>";
-        } else {
-          html =
-            '<div class="lbl">Сегодня</div><div class="big">На сегодня всё</div>';
-        }
-        el.innerHTML = html;
-      }
-
-      function renderAll() {
-        renderWeekline();
-        renderTabs();
-        renderDays();
-        renderMain();
-        renderNow();
-      }
-
-      /* ===== События расписания ===== */
-      $("tab-u").addEventListener("click", function () {
-        week = "u";
-        renderTabs();
-        renderDays();
-        renderMain();
-      });
-      $("tab-l").addEventListener("click", function () {
-        week = "l";
-        renderTabs();
-        renderDays();
-        renderMain();
-      });
-      $("days").addEventListener("click", function (e) {
-        var b = e.target.closest("button[data-d]");
-        if (!b) return;
-        day = Number(b.dataset.d);
-        renderDays();
-        renderMain();
-      });
-      function setSub(v) {
-        sub = sub === v ? 0 : v;
-        try {
-          localStorage.setItem("isp242sub", String(sub));
-        } catch (e) {}
-        renderMain();
-        renderNow();
-      }
-      $("sg1").addEventListener("click", function () {
-        setSub(1);
-      });
-      $("sg2").addEventListener("click", function () {
-        setSub(2);
-      });
-      $("swap").addEventListener("click", function () {
-        swapped = !swapped;
-        try {
-          localStorage.setItem("isp242swap", swapped ? "1" : "0");
-        } catch (e) {}
-        var n = irkutskNow(),
-          d = (n.getDay() + 6) % 7;
-        curWeek = weekOf(n);
-        week = d === 6 ? weekOf(addDays(n, 1)) : curWeek;
-        renderAll();
-      });
-      $("main").addEventListener("click", function (e) {
-        if (e.target.id === "gorepl") showView("repl");
-      });
-
-      /* ===== Замены (отображение) ===== */
-      function replRowHtml(r) {
-        var tm = PAIRS[r.pair];
-        var pair = tm
-          ? "<b>" + r.pair + "</b><small>" + tm[0] + "</small>"
-          : "<b>?</b>";
-        var main = "";
-        if (r.was) main += '<div class="was">' + esc(r.was) + "</div>";
-        main += r.now
-          ? '<div class="new">' + esc(r.now) + "</div>"
-          : '<span class="cancel">отмена</span>';
-        var where = [
-          r.teacher,
-          r.room ? "ауд. " + r.room : "",
-          r.now ? r.note : "",
-        ]
-          .filter(Boolean)
-          .map(esc)
-          .join(" · ");
-        if (where) main += '<div class="where">' + where + "</div>";
-        return '<tr><td class="p">' + pair + "</td><td>" + main + "</td></tr>";
-      }
-
-      function renderRepl() {
-        var today = iso(irkutskNow());
-        var keys = Object.keys(replDays)
-          .filter(function (k) {
-            return k >= today && hasRepl(k);
-          })
-          .sort();
-        var badge = $("rbadge");
-        $("rinfo").textContent = keys.length ? "" : "Замен пока нет";
-        badge.hidden = !keys.length;
-        badge.textContent = keys.length;
-        $("rlist").innerHTML = keys
-          .map(function (k) {
-            var d = new Date(k + "T00:00:00");
-            var rows = replDays[k].rows.slice().sort(function (a, b) {
-              return (a.pair || 99) - (b.pair || 99);
-            });
-            return (
-              '<section class="rday"><h2>' +
-              RDAYS[d.getDay()] +
-              "<span>" +
-              k.slice(8) +
-              "." +
-              k.slice(5, 7) +
-              "</span></h2>" +
-              '<table class="rt">' +
-              rows.map(replRowHtml).join("") +
-              "</table></section>"
-            );
-          })
-          .join("");
-        renderDays(); /* обновить точки на днях */
-        renderMain();
-      }
-
-      function loadRepl() {
-        $("rinfo").textContent = "Загрузка…";
-        fetch(REPL_URL, { cache: "no-store" })
-          .then(function (r) {
-            return r.json();
-          })
-          .then(function (j) {
-            replDays = j.days || {};
-            renderRepl();
-          })
-          .catch(function () {
-            $("rinfo").textContent = "Не удалось загрузить замены";
+        function renderTabs() {
+          ["u", "l"].forEach(function (w) {
+            var b = $("tab-" + w),
+              m = mondayFor(w);
+            b.innerHTML =
+              (w === "u" ? "Верхняя" : "Нижняя") +
+              "<small>" +
+              ddmm(m) +
+              " – " +
+              ddmm(addDays(m, 5)) +
+              "</small>";
+            b.setAttribute("aria-selected", week === w ? "true" : "false");
           });
-      }
+        }
 
-      function showView(v) {
-        [].forEach.call($("views").querySelectorAll("button"), function (x) {
-          x.setAttribute("aria-selected", x.dataset.v === v ? "true" : "false");
+        function renderDays() {
+          var m = mondayFor(week);
+          $("days").innerHTML = DAYS.map(function (D, i) {
+            var dt = addDays(m, i);
+            return (
+              '<button role="tab" data-d="' +
+              i +
+              '" aria-selected="' +
+              (day === i) +
+              '"' +
+              (hasRepl(iso(dt)) ? ' class="dot"' : "") +
+              ">" +
+              "<b>" +
+              D.s +
+              "</b><span>" +
+              ddmm(dt) +
+              "</span></button>"
+            );
+          }).join("");
+        }
+
+        function renderMain() {
+          var ls = lessonsOf(day, week),
+            m = addDays(mondayFor(week), day),
+            isoDate = iso(m),
+            html;
+          $("sg1").setAttribute("aria-pressed", sub === 1 ? "true" : "false");
+          $("sg2").setAttribute("aria-pressed", sub === 2 ? "true" : "false");
+          $("tot").textContent = ls.length
+            ? ls.length + " " + plural(ls.length)
+            : "";
+          html =
+            '<section class="day"><h2>' +
+            DAYS[day].d +
+            "<span>" +
+            ddmm(m) +
+            "</span></h2>";
+          if (!ls.length) {
+            html +=
+              '<div class="empty"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#duck"/></svg>Занятий нет, утка отдыхает.</div>';
+          } else {
+            html += '<ul class="list">' + ls.map(lessonHtml).join("") + "</ul>";
+          }
+          html += "</section>";
+          if (hasRepl(isoDate))
+            html +=
+              '<button class="rlink" id="gorepl">⚠️ На этот день есть замены. Открыть</button>';
+          $("main").innerHTML = html;
+        }
+
+        function renderNow() {
+          var n = irkutskNow(),
+            d = (n.getDay() + 6) % 7,
+            cur = n.getHours() * 60 + n.getMinutes(),
+            el = $("now"),
+            html;
+          if (d === 6) {
+            el.innerHTML =
+              '<div class="lbl">Сегодня</div><div class="big">Воскресенье, выходной</div>';
+            return;
+          }
+          var ls = lessonsOf(d, curWeek);
+          if (!ls.length) {
+            el.innerHTML =
+              '<div class="lbl">Сегодня</div><div class="big">Занятий нет</div>';
+            return;
+          }
+          var live = null,
+            next = null,
+            i,
+            a,
+            b;
+          for (i = 0; i < ls.length; i++) {
+            a = toMin(PAIRS[ls[i].p][0]);
+            b = toMin(PAIRS[ls[i].p][1]);
+            if (cur >= a && cur < b) {
+              live = ls[i];
+              break;
+            }
+            if (cur < a && !next) next = ls[i];
+          }
+          if (live) {
+            a = toMin(PAIRS[live.p][0]);
+            b = toMin(PAIRS[live.p][1]);
+            html =
+              '<div class="lbl">Идёт сейчас<span class="live">' +
+              live.p +
+              " пара</span></div>" +
+              '<div class="big">' +
+              esc(S[live.s].n) +
+              "</div>" +
+              '<div class="sm">до ' +
+              PAIRS[live.p][1] +
+              " · осталось " +
+              (b - cur) +
+              " мин</div>" +
+              '<div class="bar"><i style="width:' +
+              Math.round(((cur - a) / (b - a)) * 100) +
+              '%"></i></div>';
+          } else if (next) {
+            a = toMin(PAIRS[next.p][0]);
+            html =
+              '<div class="lbl">Дальше</div><div class="big">' +
+              esc(S[next.s].n) +
+              "</div>" +
+              '<div class="sm">' +
+              next.p +
+              " пара · в " +
+              PAIRS[next.p][0] +
+              " · через " +
+              (a - cur) +
+              " мин</div>";
+          } else {
+            html =
+              '<div class="lbl">Сегодня</div><div class="big">На сегодня всё</div>';
+          }
+          el.innerHTML = html;
+        }
+
+        function renderAll() {
+          renderWeekline();
+          renderTabs();
+          renderDays();
+          renderMain();
+          renderNow();
+        }
+
+        /* ===== События расписания ===== */
+        $("tab-u").addEventListener("click", function () {
+          week = "u";
+          renderTabs();
+          renderDays();
+          renderMain();
         });
-        $("v-sched").hidden = v !== "sched";
-        $("v-repl").hidden = v !== "repl";
-        if (v === "repl") loadRepl();
-      }
-      $("views").addEventListener("click", function (e) {
-        var b = e.target.closest("button[data-v]");
-        if (b) showView(b.dataset.v);
-      });
-      $("rrefresh").addEventListener("click", loadRepl);
-
-      /* ===== Тема Telegram ===== */
-      (function () {
-        var tg = window.Telegram && window.Telegram.WebApp;
-        function setDark() {
-          var dark =
-            tg && tg.colorScheme
-              ? tg.colorScheme === "dark"
-              : window.matchMedia &&
-                matchMedia("(prefers-color-scheme: dark)").matches;
-          document.documentElement.setAttribute("data-dark", dark ? "1" : "0");
-        }
-        if (tg) {
+        $("tab-l").addEventListener("click", function () {
+          week = "l";
+          renderTabs();
+          renderDays();
+          renderMain();
+        });
+        $("days").addEventListener("click", function (e) {
+          var b = e.target.closest("button[data-d]");
+          if (!b) return;
+          day = Number(b.dataset.d);
+          renderDays();
+          renderMain();
+        });
+        function setSub(v) {
+          sub = sub === v ? 0 : v;
           try {
-            tg.ready();
-            tg.expand();
-            tg.onEvent("themeChanged", setDark);
+            localStorage.setItem("isp242sub", String(sub));
           } catch (e) {}
+          renderMain();
+          renderNow();
         }
-        setDark();
-      })();
+        $("sg1").addEventListener("click", function () {
+          setSub(1);
+        });
+        $("sg2").addEventListener("click", function () {
+          setSub(2);
+        });
+        $("swap").addEventListener("click", function () {
+          swapped = !swapped;
+          try {
+            localStorage.setItem("isp242swap", swapped ? "1" : "0");
+          } catch (e) {}
+          var n = irkutskNow(),
+            d = (n.getDay() + 6) % 7;
+          curWeek = weekOf(n);
+          week = d === 6 ? weekOf(addDays(n, 1)) : curWeek;
+          renderAll();
+        });
+        $("main").addEventListener("click", function (e) {
+          if (e.target.id === "gorepl") showView("repl");
+        });
 
-      /* ===== Старт ===== */
-      renderAll();
-      setInterval(renderNow, 30000);
+        /* ===== Замены (отображение) ===== */
+        function replRowHtml(r) {
+          var tm = PAIRS[r.pair];
+          var pair = tm
+            ? "<b>" + r.pair + "</b><small>" + tm[0] + "</small>"
+            : "<b>?</b>";
+          var main = "";
+          if (r.was) main += '<div class="was">' + esc(r.was) + "</div>";
+          main += r.now
+            ? '<div class="new">' + esc(r.now) + "</div>"
+            : '<span class="cancel">отмена</span>';
+          var where = [
+            r.teacher,
+            r.room ? "ауд. " + r.room : "",
+            r.now ? r.note : "",
+          ]
+            .filter(Boolean)
+            .map(esc)
+            .join(" · ");
+          if (where) main += '<div class="where">' + where + "</div>";
+          return '<tr><td class="p">' + pair + "</td><td>" + main + "</td></tr>";
+        }
+
+        function renderRepl() {
+          var today = iso(irkutskNow());
+          var keys = Object.keys(replDays)
+            .filter(function (k) {
+              return k >= today && hasRepl(k);
+            })
+            .sort();
+          var badge = $("rbadge");
+          $("rinfo").textContent = keys.length ? "" : "Замен пока нет";
+          badge.hidden = !keys.length;
+          badge.textContent = keys.length;
+          $("rlist").innerHTML = keys
+            .map(function (k) {
+              var d = new Date(k + "T00:00:00");
+              var rows = replDays[k].rows.slice().sort(function (a, b) {
+                return (a.pair || 99) - (b.pair || 99);
+              });
+              return (
+                '<section class="rday"><h2>' +
+                RDAYS[d.getDay()] +
+                "<span>" +
+                k.slice(8) +
+                "." +
+                k.slice(5, 7) +
+                "</span></h2>" +
+                '<table class="rt">' +
+                rows.map(replRowHtml).join("") +
+                "</table></section>"
+              );
+            })
+            .join("");
+          renderDays(); /* обновить точки на днях */
+          renderMain();
+        }
+
+        function loadRepl() {
+          $("rinfo").textContent = "Загрузка…";
+          fetch(REPL_URL, { cache: "no-store" })
+            .then(function (r) {
+              return r.json();
+            })
+            .then(function (j) {
+              replDays = j.days || {};
+              renderRepl();
+            })
+            .catch(function () {
+              $("rinfo").textContent = "Не удалось загрузить замены";
+            });
+        }
+
+        function showView(v) {
+          [].forEach.call($("views").querySelectorAll("button"), function (x) {
+            x.setAttribute("aria-selected", x.dataset.v === v ? "true" : "false");
+          });
+          $("v-sched").hidden = v !== "sched";
+          $("v-repl").hidden = v !== "repl";
+          if (v === "repl") loadRepl();
+        }
+        $("views").addEventListener("click", function (e) {
+          var b = e.target.closest("button[data-v]");
+          if (b) showView(b.dataset.v);
+        });
+        $("rrefresh").addEventListener("click", loadRepl);
+
+        /* ===== Тема Telegram ===== */
+        (function () {
+          var tg = window.Telegram && window.Telegram.WebApp;
+          function setDark() {
+            var dark =
+              tg && tg.colorScheme
+                ? tg.colorScheme === "dark"
+                : window.matchMedia &&
+                  matchMedia("(prefers-color-scheme: dark)").matches;
+            document.documentElement.setAttribute("data-dark", dark ? "1" : "0");
+          }
+          if (tg) {
+            try {
+              tg.ready();
+              tg.expand();
+              tg.onEvent("themeChanged", setDark);
+            } catch (e) {}
+          }
+          setDark();
+        })();
+
+        /* ===== Старт ===== */
+        renderAll();
+        setInterval(renderNow, 30000);
     </script>
   </body>
 </html>
