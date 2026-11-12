@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Расписание мИСПР-24-2</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Unbounded:wght@500;600&display=swap">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+/* Mini App: week tabs and day pills on top, selected day as a list of lessons, colours follow the Telegram theme. */
+:root {
+  --bg: var(--tg-theme-secondary-bg-color, #EEF3F5);
+  --surface: var(--tg-theme-bg-color, #FFFFFF);
+  --ink: var(--tg-theme-text-color, #12222C);
+  --muted: var(--tg-theme-hint-color, #5B6E79);
+  --accent: var(--tg-theme-button-color, #0E7C8B);
+  --accent-ink: var(--tg-theme-button-text-color, #FFFFFF);
+  --line: color-mix(in srgb, var(--muted) 25%, transparent);
+  --chip-s: 80%; --chip-l: 90%; --duck-s: 90%; --duck-l: 58%;
+  --font-display: "Unbounded", "Onest", system-ui, sans-serif;
+  --font-body: "Onest", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+:root[data-dark="1"] { --chip-s: 38%; --chip-l: 24%; --duck-s: 85%; --duck-l: 62%; color-scheme: dark; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.4;
+  padding-left: max(14px, env(safe-area-inset-left, 0px)); padding-right: max(14px, env(safe-area-inset-right, 0px));
+  padding-top: max(12px, env(safe-area-inset-top, 0px)); padding-bottom: max(24px, env(safe-area-inset-bottom, 0px));
+}
+.wrap { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+header { display: flex; align-items: center; gap: 12px; }
+header svg { width: 46px; height: 46px; flex: none; color: hsl(48 95% 58%); }
+h1 { font-family: var(--font-display); font-weight: 600; font-size: 20px; margin: 0; }
+.sub { color: var(--muted); font-size: 12px; margin-top: 2px; }
+.top { position: sticky; top: 0; z-index: 5; background: var(--bg); padding-block: 6px; display: flex; flex-direction: column; gap: 8px; }
+.seg { display: grid; grid-template-columns: 1fr 1fr; background: var(--surface); border-radius: 12px; padding: 4px; gap: 4px; }
+button { font: inherit; color: inherit; cursor: pointer; }
+.seg button { border: 0; background: transparent; color: var(--muted); font-weight: 600; padding: 10px 8px; border-radius: 9px; min-height: 42px; }
+.seg button[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); }
+.seg small { display: block; font-size: 10px; font-weight: 500; opacity: .85; margin-top: 1px; }
+.days { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.days::-webkit-scrollbar { display: none; }
+.days button { flex: 1 0 auto; min-width: 48px; border: 0; background: var(--surface); border-radius: 10px; padding: 7px 8px; text-align: center; color: var(--ink); }
+.days b { display: block; font-size: 13px; }
+.days span { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.days button[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); }
+.days button[aria-selected="true"] span { color: var(--accent-ink); opacity: .85; }
+.days .dot { position: relative; }
+.days .dot::after { content: ""; position: absolute; top: 5px; right: 6px; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+.days button[aria-selected="true"].dot::after { background: var(--accent-ink); }
+.opts { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; }
+.opts button { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 5px 10px; }
+.opts button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.opts .tot { margin-left: auto; }
+.day { background: var(--surface); border-radius: 14px; overflow: hidden; }
+.day h2 { margin: 0; padding: 11px 14px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; display: flex; justify-content: space-between; border-bottom: 1px solid var(--line); }
+.day h2 span { color: var(--muted); text-transform: none; letter-spacing: 0; font-weight: 500; }
+.list { margin: 0; padding: 0; list-style: none; }
+.lesson { display: grid; grid-template-columns: 50px minmax(0, 1fr); gap: 10px; padding: 12px 14px; border-top: 1px solid var(--line); }
+.lesson:first-child { border-top: 0; }
+.time { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; line-height: 1.35; }
+.time b { display: block; color: var(--ink); font-size: 14px; }
+.card { display: flex; gap: 10px; min-width: 0; }
+.duck { width: 38px; height: 38px; flex: none; border-radius: 50%; display: grid; place-items: center; background: hsl(var(--h) var(--chip-s) var(--chip-l)); }
+.duck svg { width: 28px; height: 28px; color: hsl(var(--h) var(--duck-s) var(--duck-l)); }
+.t { font-weight: 600; overflow-wrap: anywhere; }
+.m { color: var(--muted); font-size: 13px; margin-top: 2px; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
+.tag { font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 99px; background: hsl(var(--h) var(--chip-s) var(--chip-l)); color: var(--ink); }
+.tag.both { background: transparent; border: 1px solid var(--line); color: var(--muted); }
+.row { margin-top: 4px; }
+.empty { padding: 26px 14px; color: var(--muted); display: flex; gap: 10px; align-items: center; }
+.empty svg { width: 30px; height: 30px; opacity: .5; }
+.weekline { display: flex; align-items: center; gap: 8px; background: var(--accent); color: var(--accent-ink); border-radius: 12px; padding: 9px 14px; font-weight: 600; }
+.weekline svg { width: 22px; height: 22px; flex: none; color: hsl(48 95% 62%); }
+.weekline small { margin-left: auto; font-weight: 500; opacity: .85; font-size: 12px; }
+.now { background: var(--surface); border-radius: 14px; padding: 12px 14px; display: grid; gap: 4px; border: 1px solid var(--accent); }
+.now .lbl { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+.now .big { font-weight: 600; overflow-wrap: anywhere; }
+.now .sm { color: var(--muted); font-size: 13px; }
+.bar { height: 6px; border-radius: 99px; background: var(--line); overflow: hidden; margin-top: 4px; }
+.bar i { display: block; height: 100%; background: var(--accent); border-radius: 99px; }
+.live { font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 99px; background: var(--accent); color: var(--accent-ink); margin-left: 6px; white-space: nowrap; }
+.stack { display: flex; flex-direction: column; gap: 10px; }
+footer { color: var(--muted); font-size: 11px; line-height: 1.5; }
+footer button { border: 0; background: transparent; color: var(--accent); padding: 0; text-decoration: underline; font-size: 11px; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="duck" viewBox="0 0 48 48">
+    <ellipse cx="21" cy="32" rx="16" ry="10.5" fill="currentColor"/>
+    <circle cx="31" cy="17" r="9" fill="currentColor"/>
+    <path d="M38 15.5c4 0 7 1.2 8 2.5-1 1.8-4.5 3-8.5 2.6z" fill="#F59E0B"/>
+    <circle cx="33.5" cy="14.5" r="1.6" fill="#12222C"/>
+    <path d="M9 31c4 5 13 6 20 0-2 7-9 9-14 7-4-1.5-6-4.5-6-7z" fill="#000" fill-opacity=".14"/>
+    <path d="M6 28c-2-1-3-3-2.5-5 3 .5 5.5 2 6.5 4z" fill="currentColor"/>
+  </symbol>
+</svg>
+<div class="wrap">
+  <header>
+    <svg viewBox="0 0 48 48" aria-hidden="true"><use href="#duck"/></svg>
+    <div><h1>мИСПР-24-2</h1><div class="sub">3 курс · 1 семестр 2026–2027</div></div>
+  </header>
+  <div class="weekline" id="weekline"></div>
+  <div class="now" id="now"></div>
+  <div class="top">
+    <div class="seg" role="tablist" aria-label="Неделя">
+      <button role="tab" id="tab-u" data-w="u"></button>
+      <button role="tab" id="tab-l" data-w="l"></button>
+    </div>
+    <div class="days" id="days" role="tablist" aria-label="День"></div>
+    <div class="opts" role="group" aria-label="Подгруппа">
+      Подгруппа
+      <button id="sg1" data-s="1" aria-pressed="false">1</button>
+      <button id="sg2" data-s="2" aria-pressed="false">2</button>
+      <span class="tot" id="tot"></span>
+    </div>
+  </div>
+  <main class="stack" id="main" aria-live="polite"></main>
+  <footer>
+    Аудитории: 21 — учебный корпус колледжа, 22 — учебно-производственный корпус.
+    Неделя определяется по календарю: с 09.11.2026 верхняя, дальше они чередуются.
+    Если не совпадает с вашей, <button id="swap">поменять местами</button>.
+  </footer>
+</div>
+<script>
+var PAIRS = {1: ["8:15", "9:45"], 2: ["9:55", "11:25"], 3: ["12:05", "13:35"], 4: ["13:45", "15:15"], 5: ["15:25", "16:55"], 6: ["17:05", "18:35"]};
+var S = {
+  oht:  {n: "Охрана труда и бережливое производство", t: "Плюснина О.М.", h: 48},
+  pdis: {n: "Проектирование и дизайн информационных систем", t: "Сафонова Т.В.", h: 285},
+  chm:  {n: "Численные методы", t: "Клеймёнов В.Ф.", h: 200},
+  rkis: {n: "Разработка кода информационных систем", t: "Сафонова Т.В.", h: 150},
+  web:  {n: "Проектирование и разработка веб-приложений", t: "Сенотрусова Т.А.", h: 18},
+  hist: {n: "История", t: "Михалёва Г.С.", h: 28},
+  razg: {n: "Внеурочное мероприятие «Разговоры о важном»", t: "Сенотрусова Т.А.", h: 335},
+  ya:   {n: "Иностранный язык в профессиональной деятельности", t: "", h: 100},
+  arh:  {n: "Архитектура аппаратных средств", t: "Моисеева А.Д.", h: 8},
+  ks:   {n: "Компьютерные сети", t: "Шкилёва В.Е.", h: 235},
+  fiz:  {n: "Физическая культура", t: "", h: 170}
+};
+var ROD = {sg: 1, t: "Родионова И.П.", r: "21-35"}, BUH = {sg: 2, t: "Бухарова Н.А.", r: "21-17"};
+/* w: u = верхняя, l = нижняя, b = каждую неделю */
+var DAYS = [
+  {d: "Понедельник", s: "Пн", L: [
+    {p: 1, w: "l", s: "oht", r: "21-36"}, {p: 2, w: "l", s: "pdis", r: "21-39"},
+    {p: 3, w: "l", s: "chm", r: "21-31"}, {p: 4, w: "l", s: "rkis", r: "22-213"}]},
+  {d: "Вторник", s: "Вт", L: [
+    {p: 1, w: "l", s: "ya", g: [BUH]}, {p: 2, w: "b", s: "web", r: "21-33"},
+    {p: 3, w: "u", s: "pdis", r: "21-33"}, {p: 3, w: "l", s: "hist", r: "21-41"},
+    {p: 4, w: "u", s: "razg", r: "21-33"}]},
+  {d: "Среда", s: "Ср", L: [
+    {p: 3, w: "l", s: "chm", r: "21-34"}, {p: 4, w: "l", s: "rkis", r: "22-214"},
+    {p: 5, w: "u", s: "pdis", r: "22-214"}, {p: 5, w: "l", s: "arh", r: "21-39"},
+    {p: 6, w: "u", s: "arh", r: "21-39"}, {p: 6, w: "l", s: "pdis", r: "21-39"}]},
+  {d: "Четверг", s: "Чт", L: [
+    {p: 1, w: "u", s: "rkis", r: "21-39"}, {p: 2, w: "u", s: "rkis", r: "21-39"},
+    {p: 3, w: "u", s: "web", r: "21-33"}, {p: 4, w: "b", s: "ks", r: "21-33"},
+    {p: 5, w: "l", s: "web", r: "21-33"}]},
+  {d: "Пятница", s: "Пт", L: [
+    {p: 2, w: "u", s: "hist", r: "21-41"}, {p: 3, w: "u", s: "oht", r: "21-36"},
+    {p: 3, w: "l", s: "ya", g: [ROD, BUH]}, {p: 4, w: "u", s: "chm", r: "21-47"},
+    {p: 4, w: "l", s: "rkis", r: "21-39"}, {p: 5, w: "u", s: "arh", r: "21-39"},
+    {p: 5, w: "l", s: "fiz", r: "–"}]},
+  {d: "Суббота", s: "Сб", L: [
+    {p: 2, w: "l", s: "ya", g: [ROD]}, {p: 3, w: "l", s: "ks", r: "21-46"},
+    {p: 4, w: "l", s: "web", r: "21-33"}, {p: 5, w: "l", s: "fiz", r: "–"}]}
+];
+
+var TZ_OFFSET_MIN = 8 * 60; /* Иркутск, UTC+8 */
+function irkutskNow() { var n = new Date(); return new Date(n.getTime() + (n.getTimezoneOffset() + TZ_OFFSET_MIN) * 60000); }
+function mondayOf(d) { var x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; }
+var ANCHOR = new Date(2026, 10, 9); /* понедельник верхней недели: 09.11.2026 */
+var swapped = false;
+function weekOf(d) {
+  var n = Math.round((mondayOf(d) - ANCHOR) / (7 * 86400000));
+  var up = (((n % 2) + 2) % 2 === 0);
+  if (swapped) up = !up;
+  return up ? "u" : "l";
+}
+
+var now = irkutskNow();
+var dow = (now.getDay() + 6) % 7; /* 0 = Пн */
+var week, day, curWeek = weekOf(now), sub = 0;
+try { swapped = localStorage.getItem("isp242swap") === "1"; sub = Number(localStorage.getItem("isp242sub")) || 0; } catch (e) {}
+curWeek = weekOf(now);
+if (dow === 6) { week = weekOf(new Date(now.getTime() + 86400000)); day = 0; } else { week = curWeek; day = dow; }
+
+function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return {"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]; }); }
+function plural(n) { var m = n % 10, c = n % 100; return (m === 1 && c !== 11) ? "пара" : (m >= 2 && m <= 4 && (c < 12 || c > 14)) ? "пары" : "пар"; }
+function visible(x) {
+  if (x.w !== "b" && x.w !== week) return false;
+  if (sub && x.g && !x.g.some(function (g) { return g.sg === sub; })) return false;
+  return true;
+}
+function lessonsOf(i) { return DAYS[i].L.filter(visible).sort(function (a, b) { return a.p - b.p; }); }
+function duck(h) { return '<div class="duck" style="--h:' + h + '"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#duck"/></svg></div>'; }
+
+function lessonHtml(x) {
+  var s = S[x.s], tm = PAIRS[x.p], meta;
+  if (x.g) {
+    meta = x.g.filter(function (g) { return !sub || g.sg === sub; }).map(function (g) {
+      return '<div class="m row"><span class="tag" style="--h:' + s.h + '">подгруппа ' + g.sg + '</span><span>' + esc(g.t) + '</span><span>ауд. ' + g.r + '</span></div>';
+    }).join("");
+    if (x.g.length === 1 && !sub) meta += '<div class="m row">Подгруппа ' + (x.g[0].sg === 1 ? 2 : 1) + ' в это время свободна</div>';
+  } else {
+    meta = '<div class="m">' + (s.t ? '<span>' + esc(s.t) + '</span>' : '') + '<span>' + (x.r === "–" ? "вне аудитории" : "ауд. " + x.r) + '</span>' +
+      (x.w === "b" ? '<span class="tag both">каждую неделю</span>' : '') + '</div>';
+  }
+  return '<li class="lesson"><div class="time"><b>' + x.p + ' пара</b>' + tm[0] + '–' + tm[1] + '</div><div class="card">' + duck(s.h) +
+    '<div style="min-width:0"><div class="t">' + esc(s.n) + (RENDER_DAY === dow && week === curWeek && LIVE.p === x.p ? '<span class="live">идёт сейчас</span>' : '') + '</div>' + meta + '</div></div></li>';
+}
+
+var RENDER_DAY = -2, LIVE = {p: null};
+var MONTHS = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"];
+function hm(t) { var a = t.split(":"); return Number(a[0]) * 60 + Number(a[1]); }
+function span(min) { var h = Math.floor(min / 60), m = min % 60; return (h ? h + " ч " : "") + (m || !h ? m + " мин" : ""); }
+
+function updateLive() {
+  now = irkutskNow(); dow = (now.getDay() + 6) % 7; curWeek = weekOf(now);
+  var up = curWeek === "u";
+  document.getElementById("weekline").innerHTML =
+    '<svg viewBox="0 0 48 48" aria-hidden="true"><use href="#duck"/></svg>Сейчас ' + (up ? "верхняя" : "нижняя") + ' неделя' +
+    '<small>' + DAYS_FULL[dow] + ', ' + now.getDate() + ' ' + MONTHS[now.getMonth()] + '</small>';
+  LIVE = {p: null};
+  var box = document.getElementById("now"), html = '<div class="lbl">Сейчас</div>';
+  var ls = dow === 6 ? [] : DAYS[dow].L.filter(function (x) {
+    return (x.w === "b" || x.w === curWeek) && !(sub && x.g && !x.g.some(function (g) { return g.sg === sub; }));
+  }).sort(function (a, b) { return a.p - b.p; });
+  var m = now.getHours() * 60 + now.getMinutes();
+  if (!ls.length) {
+    html += '<div class="big">Сегодня занятий нет</div><div class="sm">Утка отдыхает, можно выдохнуть.</div>';
+  } else {
+    var cur = null, nxt = null;
+    for (var i = 0; i < ls.length; i++) {
+      var a = hm(PAIRS[ls[i].p][0]), b = hm(PAIRS[ls[i].p][1]);
+      if (m >= a && m < b) { cur = ls[i]; nxt = ls[i + 1] || null; break; }
+      if (m < a) { nxt = ls[i]; break; }
+    }
+    var first = hm(PAIRS[ls[0].p][0]), last = PAIRS[ls[ls.length - 1].p][1];
+    if (cur) {
+      LIVE.p = cur.p;
+      var s0 = hm(PAIRS[cur.p][0]), s1 = hm(PAIRS[cur.p][1]);
+      var room = cur.g ? cur.g.filter(function (g) { return !sub || g.sg === sub; }).map(function (g) { return g.r; }).join(" / ") : cur.r;
+      html += '<div class="big">' + esc(S[cur.s].n) + '</div><div class="sm">' + (room === "–" ? "вне аудитории" : "ауд. " + room) +
+        ' · до конца ' + span(s1 - m) + ' (до ' + PAIRS[cur.p][1] + ')</div>' +
+        '<div class="bar"><i style="width:' + Math.round((m - s0) / (s1 - s0) * 100) + '%"></i></div>';
+      if (nxt) html += '<div class="sm">Дальше: ' + esc(S[nxt.s].n) + ' в ' + PAIRS[nxt.p][0] + '</div>';
+      else html += '<div class="sm">Это последняя пара, закончите в ' + last + '.</div>';
+    } else if (nxt) {
+      var ns = hm(PAIRS[nxt.p][0]);
+      var nroom = nxt.g ? nxt.g.filter(function (g) { return !sub || g.sg === sub; }).map(function (g) { return g.r; }).join(" / ") : nxt.r;
+      html += '<div class="big">' + (m < first ? 'Первая пара в ' : 'Перемена, дальше в ') + PAIRS[nxt.p][0] + ', через ' + span(ns - m) + '</div>' +
+        '<div class="sm">' + esc(S[nxt.s].n) + ' · ' + (nroom === "–" ? "вне аудитории" : "ауд. " + nroom) + '</div>' +
+        '<div class="sm">Сегодня ' + ls.length + ' ' + plural(ls.length) + ', закончите в ' + last + '.</div>';
+    } else {
+      html += '<div class="big">На сегодня всё</div><div class="sm">Пары закончились в ' + last + '.</div>';
+    }
+  }
+  box.innerHTML = html;
+}
+var DAYS_FULL = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"];
+
+function dayHtml(i) {
+  RENDER_DAY = i;
+  var ls = lessonsOf(i);
+  var h = '<section class="day"><h2>' + DAYS[i].d + '<span>' + ls.length + ' ' + plural(ls.length) + '</span></h2>';
+  h += ls.length ? '<ul class="list">' + ls.map(lessonHtml).join("") + '</ul>'
+    : '<div class="empty"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#duck"/></svg>Занятий нет, утка отдыхает</div>';
+  return h + '</section>';
+}
+
+function render() {
+  updateLive();
+  var total = 0;
+  for (var i = 0; i < 6; i++) total += lessonsOf(i).length;
+  ["u", "l"].forEach(function (w) {
+    var b = document.getElementById("tab-" + w);
+    b.innerHTML = (w === "u" ? "Верхняя" : "Нижняя") + '<small>' + (w === curWeek ? "сейчас" : "&nbsp;") + '</small>';
+    b.setAttribute("aria-selected", String(w === week));
+  });
+  var dh = "";
+  for (var j = 0; j < 6; j++) {
+    var cls = (j === dow && week === curWeek) ? "dot" : "";
+    dh += '<button role="tab" class="' + cls + '" data-d="' + j + '" aria-selected="' + (day === j) + '"><b>' + DAYS[j].s + '</b><span>' + lessonsOf(j).length + '</span></button>';
+  }
+  dh += '<button role="tab" data-d="-1" aria-selected="' + (day === -1) + '"><b>Все</b><span>' + total + '</span></button>';
+  document.getElementById("days").innerHTML = dh;
+  var m = "";
+  if (day === -1) { for (var k = 0; k < 6; k++) m += dayHtml(k); } else { m = dayHtml(day); }
+  document.getElementById("main").innerHTML = m;
+  document.getElementById("tot").textContent = total + " " + plural(total) + " за неделю";
+  document.getElementById("sg1").setAttribute("aria-pressed", String(sub === 1));
+  document.getElementById("sg2").setAttribute("aria-pressed", String(sub === 2));
+}
+
+function tap() { try { window.Telegram.WebApp.HapticFeedback.selectionChanged(); } catch (e) {} }
+document.querySelector(".seg").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; week = b.dataset.w; tap(); render(); });
+document.getElementById("days").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; day = Number(b.dataset.d); tap(); render(); });
+document.querySelector(".opts").addEventListener("click", function (e) {
+  var b = e.target.closest("button"); if (!b || !b.dataset.s) return;
+  var n = Number(b.dataset.s); sub = sub === n ? 0 : n; tap();
+  try { localStorage.setItem("isp242sub", String(sub)); } catch (x) {}
+  render();
+});
+document.getElementById("swap").addEventListener("click", function () {
+  swapped = !swapped; try { localStorage.setItem("isp242swap", swapped ? "1" : "0"); } catch (x) {}
+  curWeek = weekOf(now); week = curWeek; render();
+});
+
+(function initTelegram() {
+  var tg = window.Telegram && window.Telegram.WebApp, dark;
+  if (tg) { try { tg.ready(); tg.expand(); } catch (e) {} dark = tg.colorScheme === "dark"; }
+  else dark = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches;
+  document.documentElement.dataset.dark = dark ? "1" : "0";
+  if (tg) { try { tg.setHeaderColor("secondary_bg_color"); tg.setBackgroundColor("secondary_bg_color"); } catch (e) {} }
+})();
+render();
+setInterval(function () { if (!document.hidden) render(); }, 60000);
+</script>
+</body>
+</html>
