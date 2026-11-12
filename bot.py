@@ -119,7 +119,7 @@ _rows = [
 if WEBAPP_URL:
     _rows.insert(0, [{
         "text": "🦆 Открыть расписание",
-        "web_app": {"url": WEBAPP_URL}
+        "web_app": {"url": WEBAPP_URL + "?v=2"}
     }])
 
 KEYBOARD = {"keyboard": _rows, "resize_keyboard": True}
@@ -899,7 +899,7 @@ def main():
                 menu_button={
                     "type": "web_app",
                     "text": "Расписание",
-                    "web_app": {"url": WEBAPP_URL}
+                    "web_app": {"url": WEBAPP_URL + "?v=2"}
                 }
             )
         except Exception as e:
